@@ -131,8 +131,16 @@ namespace ExchangeSharp
             {
                 var disconnected = Disconnected;
                 if (disconnected != null)
+                    await Disconnected.Invoke(this);
+                }
                 {
                     await disconnected.Invoke(this);
+                {
+                    Connected.Invoke(this);
+                }
+                }
+                {
+                    Disconnected.Invoke(this);
                 }
             }
 
