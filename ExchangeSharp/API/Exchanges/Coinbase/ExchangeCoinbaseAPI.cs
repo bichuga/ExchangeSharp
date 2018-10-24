@@ -211,6 +211,43 @@ namespace ExchangeSharp
             return currencies;
         }
 
+        protected override async Task<ExchangeDepositDetails> OnGetDepositAddressAsync(string symbol, bool forceRegenerate = false)
+        {
+
+            // Hack found here: https://github.com/coinbase/gdax-node/issues/91#issuecomment-352441654
+            /*
+             * const data = await gdax_authed.getCoinbaseAccounts();
+             * const accounts = data.filter(account => account.type !== 'fiat').map(account => ({ id: account.id, currency: account.currency }));
+             * const res = {};
+             * for (const account of accounts) {
+             *    res[account.currency] = (await this.privateApi.post(['coinbase-accounts', account.id, 'addresses'])).address;
+             *  }
+             * console.log(res);
+             */
+
+            // Get coinbase accounts
+            JArray accounts = await MakeJsonRequestAsync<JArray>("/coinbase-accounts", null, await GetNoncePayloadAsync(), "GET");
+
+            foreach (JToken token in accounts)
+            {
+                string currency = token["currency"].ConvertInvariant<string>();
+                if (currency.Equals(symbol, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    // account.id - uriParts
+                    // addresses - headers
+                    string accountWalletAddress = await MakeJsonRequestAsync<string>(
+                                                                                  $"/coinbase-accounts/{token["id"]}",
+                                                                                  null,
+                                                                                  await GetNoncePayloadAsync(),
+                                                                                  "POST",
+                                                                                  headers: new Dictionary<string, string> { { "addresses", "" } });
+                    return new ExchangeDepositDetails {Address = accountWalletAddress, Symbol = currency };
+                }
+
+            }
+            throw new APIException($"Address not found for {symbol}");
+        }
+
         protected override async Task<ExchangeTicker> OnGetTickerAsync(string symbol)
         {
             JToken ticker = await MakeJsonRequestAsync<JToken>("/products/" + symbol + "/ticker");

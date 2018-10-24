@@ -438,7 +438,7 @@ namespace ExchangeSharp
         /// The encoding of payload is API dependant but is typically json.
         /// <param name="method">Request method or null for default</param>
         /// <returns>Raw response</returns>
-        public Task<string> MakeRequestAsync(string url, string baseUrl = null, Dictionary<string, object> payload = null, string method = null) => requestMaker.MakeRequestAsync(url, baseUrl: baseUrl, payload: payload, method: method);
+        public Task<string> MakeRequestAsync(string url, string baseUrl = null, Dictionary<string, object> payload = null, string method = null, Dictionary<string, string> headers = null) => requestMaker.MakeRequestAsync(url, baseUrl: baseUrl, payload: payload, method: method, headers: headers);
 
         /// <summary>
         /// Make a JSON request to an API end point
@@ -448,12 +448,13 @@ namespace ExchangeSharp
         /// <param name="baseUrl">Override the base url, null for the default BaseUrl</param>
         /// <param name="payload">Payload, can be null. For private API end points, the payload must contain a 'nonce' key set to GenerateNonce value.</param>
         /// <param name="requestMethod">Request method or null for default</param>
+        /// <param name="headers">Optional headers to pass in.</param>
         /// <returns>Result decoded from JSON response</returns>
-        public async Task<T> MakeJsonRequestAsync<T>(string url, string baseUrl = null, Dictionary<string, object> payload = null, string requestMethod = null)
+        public async Task<T> MakeJsonRequestAsync<T>(string url, string baseUrl = null, Dictionary<string, object> payload = null, string requestMethod = null, Dictionary<string, string> headers = null)
         {
             await new SynchronizationContextRemover();
 
-            string stringResult = await MakeRequestAsync(url, baseUrl: baseUrl, payload: payload, method: requestMethod);
+            string stringResult = await MakeRequestAsync(url, baseUrl: baseUrl, payload: payload, method: requestMethod, headers: headers);
             T jsonResult = JsonConvert.DeserializeObject<T>(stringResult);
             if (jsonResult is JToken token)
             {

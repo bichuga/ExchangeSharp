@@ -144,8 +144,9 @@ namespace ExchangeSharp
         /// <param name="payload">Payload, can be null. For private API end points, the payload must contain a 'nonce' key set to GenerateNonce value.</param>
         /// The encoding of payload is API dependant but is typically json.</param>
         /// <param name="method">Request method or null for default. Example: 'GET' or 'POST'.</param>
+        /// <param name="headers">Optional headers to be passed in.</param>
         /// <returns>Raw response</returns>
-        public async Task<string> MakeRequestAsync(string url, string baseUrl = null, Dictionary<string, object> payload = null, string method = null)
+        public async Task<string> MakeRequestAsync(string url, string baseUrl = null, Dictionary<string, object> payload = null, string method = null, Dictionary<string,string> headers = null)
         {
             await new SynchronizationContextRemover();
 
@@ -169,7 +170,15 @@ namespace ExchangeSharp
             request.AddHeader("accept-language", "en-US,en;q=0.5");
             request.AddHeader("content-type", api.RequestContentType);
             request.AddHeader("user-agent", BaseAPI.RequestUserAgent);
-            request.Timeout = request.ReadWriteTimeout = (int)api.RequestTimeout.TotalMilliseconds;
+            if (headers != null)
+            {
+                foreach (var header in headers)
+                {
+                     request.AddHeader(header.Key, header.Value);
+                }
+            }
+
+{           request.Timeout = request.ReadWriteTimeout = (int)api.RequestTimeout.TotalMilliseconds;
             await api.ProcessRequestAsync(request, payload);
             HttpWebResponse response = null;
             string responseString = null;

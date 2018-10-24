@@ -51,8 +51,9 @@ namespace ExchangeSharp
         /// <param name="payload">Payload, can be null. For private API end points, the payload must contain a 'nonce' key set to GenerateNonce value.</param>
         /// The encoding of payload is API dependant but is typically json.</param>
         /// <param name="method">Request method or null for default</param>
+        /// <param name="headers">Optional headers to be passed in.</param>
         /// <returns>Raw response</returns>
-        Task<string> MakeRequestAsync(string url, string baseUrl = null, Dictionary<string, object> payload = null, string method = null);
+        Task<string> MakeRequestAsync(string url, string baseUrl = null, Dictionary<string, object> payload = null, string method = null, Dictionary<string, string> headers = null);
 
         /// <summary>
         /// An action to execute when a request has been made (this request and state and object (response or exception))
